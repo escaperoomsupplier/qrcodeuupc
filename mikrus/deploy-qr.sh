@@ -51,7 +51,8 @@ chown -R "$APP_USER:$APP_USER" "$APP_DIR" "$DATA_DIR"
 cd "$APP_DIR/server"
 corepack enable
 corepack prepare pnpm@8.15.9 --activate
-sudo -u "$APP_USER" pnpm install --frozen-lockfile || sudo -u "$APP_USER" pnpm install
+sudo -u "$APP_USER" pnpm install
+sudo -u "$APP_USER" pnpm rebuild better-sqlite3
 
 install -m 0644 "$APP_DIR/mikrus/qrcodeuupc.service" /etc/systemd/system/qrcodeuupc.service
 
