@@ -77,21 +77,32 @@ async function cloudFetch(pathStr, init = {}) {
 
 async function ensureRegistered() {
   if (data.agentToken) return;
-  log(`registering with ${data.serverUrl} ...`);
-  const res = await fetch(data.serverUrl.replace(/\/$/, '') + '/api/agents/register', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ label: `local app ${require('os').hostname()}` }),
-  });
-  if (!res.ok) {
-    throw new Error(`register failed: HTTP ${res.status}: ${await res.text()}`);
+  let backoff = 1000;
+  const maxBackoff = 30000;
+  while (true) {
+    try {
+      log(`registering with ${data.serverUrl} ...`);
+      const res = await fetch(data.serverUrl.replace(/\/$/, '') + '/api/agents/register', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ label: `local app ${require('os').hostname()}` }),
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+      }
+      const body = await res.json();
+      data.agentId = body.agentId;
+      data.agentToken = body.agentToken;
+      data.publicUrl = body.publicUrl || data.serverUrl;
+      saveData();
+      log(`registered: agentId=${body.agentId}`);
+      return;
+    } catch (err) {
+      log(`register failed: ${err.message}; retrying in ${backoff}ms`);
+      await sleep(backoff);
+      backoff = Math.min(backoff * 2, maxBackoff);
+    }
   }
-  const body = await res.json();
-  data.agentId = body.agentId;
-  data.agentToken = body.agentToken;
-  data.publicUrl = body.publicUrl || data.serverUrl;
-  saveData();
-  log(`registered: agentId=${body.agentId}`);
 }
 
 // --- UUPC trigger ------------------------------------------------------------
