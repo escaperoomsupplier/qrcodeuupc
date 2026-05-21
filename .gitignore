@@ -1,11 +1,14 @@
 node_modules/
 dist/
+data/
 *.log
+*.log.*
 .env
 .env.*
 !.env.example
-agent/config.json
-agent/agent.log
-agent/agent.exe
+agent/local-data.json
+agent/qr-uupc.exe
+agent/dist-test/
+server/data/
 .DS_Store
 Thumbs.db

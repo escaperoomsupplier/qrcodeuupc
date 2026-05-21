@@ -1,0 +1,14 @@
+{
+  "name": "qrcodeuupc-server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "migrate": "node migrate.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "qrcode": "^1.5.4"
+  }
+}

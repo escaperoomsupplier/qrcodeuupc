@@ -1,0 +1,17 @@
+[Unit]
+Description=qrcodeuupc cloud API (qr.allescaperoompuzzles.com)
+After=network.target
+
+[Service]
+Type=simple
+User=aerp
+Group=aerp
+WorkingDirectory=/var/www/qrcodeuupc/server
+Environment=NODE_ENV=production
+EnvironmentFile=/etc/qrcodeuupc.env
+ExecStart=/usr/bin/node index.js
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

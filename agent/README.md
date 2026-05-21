@@ -1,56 +1,40 @@
-# qrcodeuupc agent
+# qr-uupc.exe (lokalna apka)
 
-Lokalny agent łączący się z `qr.allescaperoompuzzles.com` i wyzwalający stan **WIN** na UUPC w sieci LAN.
+Apka działająca lokalnie na komputerze z dostępem do UUPC w sieci LAN. Dwie funkcje w jednym procesie:
 
-## Instalacja (dla klienta końcowego)
+- **Web UI** na `http://localhost:8765` — generujesz QR, ustawiasz IP UUPC, drukujesz
+- **SSE klient** do `qr.allescaperoompuzzles.com` — na każdy scan QR wystrzeliwuje `value=2` do UUPC (`/machine/state`)
 
-1. Pobierz `agent.exe` z [Releases].
-2. W tym samym folderze co `agent.exe` utwórz `config.json` (skopiuj z `config.example.json` i edytuj):
+## Użycie
 
-   ```json
-   {
-     "serverUrl": "https://qr.allescaperoompuzzles.com",
-     "agentToken": "ak_xxx (token pokoju z panelu)",
-     "uupcMap": {
-       "default": "192.168.1.38"
-     },
-     "uupcTimeoutMs": 3000
-   }
-   ```
+1. Uruchom `qr-uupc.exe`. Pierwsze uruchomienie zarejestruje się anonimowo w chmurze i zapisze token do `local-data.json` obok exe.
+2. Otworzy się przeglądarka. Wpisz nazwę i IP UUPC, kliknij „Wygeneruj QR".
+3. Wydrukuj.
 
-3. Odpal `agent.exe` (dwuklik). Powinien wyświetlić `stream connected`.
-4. Żeby uruchamiał się przy starcie systemu: skrót do `agent.exe` w `Win+R` → `shell:startup`.
+Apka musi być uruchomiona w momencie skanowania QR. Autostart: skrót w `Win+R → shell:startup`.
 
-## uupcMap
+## Zmienne środowiskowe
 
-Klucz `default` jest używany dla każdego QR, który w panelu ma `target_label = "default"`. Jeśli masz kilka UUPC w pokoju, dodaj kolejne klucze:
+- `QR_SERVER_URL` — domyślnie `https://qr.allescaperoompuzzles.com`; ustaw na lokalny serwer w dev.
+- `PORT` — domyślnie 8765 (port web UI).
+- `NO_OPEN_BROWSER=1` — nie otwieraj przeglądarki automatycznie.
 
-```json
-"uupcMap": {
-  "default": "192.168.1.38",
-  "uupc-frontdoor": "192.168.1.39",
-  "uupc-vault": "192.168.1.40"
-}
-```
+## Pliki tworzone obok exe
 
-Wartość może być samym IP (`192.168.1.38`), `host:port`, albo pełnym URL-em (`http://192.168.1.38`).
+- `local-data.json` — token + lista QR (slug → IP)
+- `agent.log` — log działania (rotacja po 5 MB → `agent.log.1`)
 
-## Logi
-
-Agent zapisuje `agent.log` w folderze z `agent.exe` (z rotacją po 5 MB → `agent.log.1`).
-
-## Build z kodu źródłowego
+## Build z kodu
 
 ```sh
 pnpm install
 pnpm run build
-# → ./agent.exe (~42 MB, standalone Node 20 win-x64)
+# → qr-uupc.exe (~44 MB, standalone Node 20)
 ```
 
 ## Dev (bez budowania exe)
 
 ```sh
-node index.js
-# albo z innym configiem:
-node index.js --config /path/to/config.json
+pnpm install
+QR_SERVER_URL=http://localhost:3001 pnpm start
 ```

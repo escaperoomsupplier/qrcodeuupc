@@ -1,8 +1,0 @@
-{
-  "serverUrl": "http://localhost:8080",
-  "agentToken": "demo-agent-token-xyz",
-  "uupcMap": {
-    "default": "http://localhost:9100"
-  },
-  "uupcTimeoutMs": 3000
-}
