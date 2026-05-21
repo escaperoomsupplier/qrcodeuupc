@@ -3,6 +3,7 @@ const path = require('node:path');
 const http = require('node:http');
 const { spawn } = require('node:child_process');
 const QRCode = require('qrcode');
+const pkg = require('./package.json');
 
 // --- paths -------------------------------------------------------------------
 // Prefer cwd (where user runs the exe), fall back to next to the binary.
@@ -435,7 +436,7 @@ function openBrowser(url) {
 
 // --- main --------------------------------------------------------------------
 (async () => {
-  log(`qrcodeuupc local app starting; data=${DATA_FILE}`);
+  log(`qrcodeuupc local app v${pkg.version} starting; data=${DATA_FILE}`);
   try {
     await ensureRegistered();
   } catch (err) {
