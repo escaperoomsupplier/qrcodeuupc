@@ -33,6 +33,7 @@ elif [ ! -d "$APP_DIR/.git" ]; then
   rm -rf "$APP_DIR"
   mv "$CLONE_DIR/app" "$APP_DIR"
 else
+  git config --global --add safe.directory "$APP_DIR"
   git -C "$APP_DIR" fetch origin main
   git -C "$APP_DIR" reset --hard origin/main
 fi
@@ -49,10 +50,11 @@ fi
 chown -R "$APP_USER:$APP_USER" "$APP_DIR" "$DATA_DIR"
 
 cd "$APP_DIR/server"
-corepack enable
-corepack prepare pnpm@8.15.9 --activate
-sudo -u "$APP_USER" pnpm install
-sudo -u "$APP_USER" pnpm rebuild better-sqlite3
+# Use npm (not pnpm) for the server install — better-sqlite3 needs its
+# postinstall to download the prebuilt binary, which pnpm 11 blocks unless
+# the package is explicitly allowlisted via mechanisms that vary by version.
+rm -rf node_modules
+sudo -u "$APP_USER" npm install --omit=dev
 
 install -m 0644 "$APP_DIR/mikrus/qrcodeuupc.service" /etc/systemd/system/qrcodeuupc.service
 
