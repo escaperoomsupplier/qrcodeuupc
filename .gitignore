@@ -1,0 +1,11 @@
+node_modules/
+dist/
+*.log
+.env
+.env.*
+!.env.example
+agent/config.json
+agent/agent.log
+agent/agent.exe
+.DS_Store
+Thumbs.db

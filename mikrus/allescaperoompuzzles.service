@@ -1,0 +1,17 @@
+[Unit]
+Description=All Escape Room Puzzles Next.js app
+After=network.target
+
+[Service]
+Type=simple
+User=aerp
+Group=aerp
+WorkingDirectory=/var/www/allescaperoompuzzles
+Environment=NODE_ENV=production
+EnvironmentFile=/etc/allescaperoompuzzles.env
+ExecStart=/usr/bin/pnpm exec next start --hostname 127.0.0.1 --port 3000
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
