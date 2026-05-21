@@ -259,45 +259,45 @@ ${bodyHtml}
 function homePage(error) {
   const slugs = Object.keys(data.qrMappings).sort((a, b) => data.qrMappings[b].createdAt - data.qrMappings[a].createdAt);
   const list = slugs.length === 0
-    ? `<div class="empty">Brak QR kodów. Dodaj pierwszy poniżej.</div>`
+    ? `<div class="empty">No QR codes yet. Create your first one below.</div>`
     : slugs.map((slug) => {
         const m = data.qrMappings[slug];
         const url = `${data.publicUrl}/s/${slug}`;
         return `<div class="card qr-row">
           <div>
             <div style="font-size:1.125rem;font-weight:500">${escapeHtml(m.name)}</div>
-            <div class="qr-meta">UUPC: ${escapeHtml(m.ip)}${m.singleUse ? ' · jednorazowy' : ''}${m.cooldownSeconds ? ` · cooldown ${m.cooldownSeconds}s` : ''}</div>
+            <div class="qr-meta">UUPC: ${escapeHtml(m.ip)}${m.singleUse ? ' · single-use' : ''}${m.cooldownSeconds ? ` · ${m.cooldownSeconds}s cooldown` : ''}</div>
             <div class="qr-url">${escapeHtml(url)}</div>
           </div>
           <div style="display:flex;gap:0.5rem">
-            <a class="btn" href="/qr/${escapeHtml(slug)}/print" target="_blank">Drukuj</a>
-            <form method="POST" action="/qr/${escapeHtml(slug)}/delete" onsubmit="return confirm('Usunąć ten QR?')">
-              <button class="danger" type="submit">Usuń</button>
+            <a class="btn" href="/qr/${escapeHtml(slug)}/print" target="_blank">Print</a>
+            <form method="POST" action="/qr/${escapeHtml(slug)}/delete" onsubmit="return confirm('Delete this QR code?')">
+              <button class="danger" type="submit">Delete</button>
             </form>
           </div>
         </div>`;
       }).join('');
 
   const form = `<div class="card">
-    <h2 style="margin-top:0">Nowy QR</h2>
+    <h2 style="margin-top:0">New QR code</h2>
     <form method="POST" action="/qr">
       <div class="form-row">
-        <label>Nazwa (np. „Drzwi sejf")</label>
-        <input type="text" name="name" required maxlength="200" placeholder="Drzwi sejf">
+        <label>Name (e.g. "Vault door")</label>
+        <input type="text" name="name" required maxlength="200" placeholder="Vault door">
       </div>
       <div class="form-row">
-        <label>IP UUPC w sieci lokalnej</label>
+        <label>UUPC IP on your local network</label>
         <input type="text" name="ip" required placeholder="192.168.1.38" value="${escapeHtml(data._lastIp || '')}">
       </div>
       <div class="form-row">
-        <label>Cooldown między skanami (sekundy, 0 = brak)</label>
+        <label>Cooldown between scans (seconds, 0 = no cooldown)</label>
         <input type="number" name="cooldownSeconds" min="0" max="3600" value="2">
       </div>
       <div class="form-row inline">
         <input type="checkbox" name="singleUse" id="su" value="1">
-        <label for="su" style="margin:0">Jednorazowy (po pierwszym skanie wygasa)</label>
+        <label for="su" style="margin:0">Single-use (expires after first scan)</label>
       </div>
-      <button type="submit">Wygeneruj QR</button>
+      <button type="submit">Generate QR</button>
     </form>
   </div>`;
 
@@ -313,7 +313,7 @@ async function printPage(slug, res) {
     <img src="${dataUrl}" alt="QR" style="width:60vmin;max-width:600px;height:auto">
     <h2 style="margin-top:1rem;font-weight:500">${escapeHtml(m.name)}</h2>
     <p style="font-family:ui-monospace,monospace;font-size:0.875rem;opacity:0.6">${escapeHtml(url)}</p>
-    <div class="no-print" style="margin-top:2rem"><button onclick="window.print()">Drukuj</button></div>
+    <div class="no-print" style="margin-top:2rem"><button onclick="window.print()">Print</button></div>
   </div>`;
   res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
   res.end(`<!doctype html><html><head><meta charset="utf-8"><title>Print ${escapeHtml(m.name)}</title>
@@ -346,7 +346,7 @@ async function handleCreateQr(req, res) {
   const singleUse = !!form.singleUse;
 
   if (!name || !ip) {
-    sendHtml(res, 400, homePage('Nazwa i IP są wymagane'));
+    sendHtml(res, 400, homePage('Name and UUPC IP are required'));
     return;
   }
 
@@ -356,7 +356,7 @@ async function handleCreateQr(req, res) {
       body: JSON.stringify({ name, targetLabel: 'default', singleUse, cooldownSeconds }),
     });
     if (!r.ok) {
-      let msg = `Serwer zwrócił błąd ${r.status}`;
+      let msg = `Server returned error ${r.status}`;
       try {
         const errBody = await r.json();
         if (errBody?.error) msg = errBody.error;
@@ -377,7 +377,7 @@ async function handleCreateQr(req, res) {
     log(`QR created slug=${created.slug} name="${name}" ip=${ip}`);
     redirect(res, '/');
   } catch (err) {
-    sendHtml(res, 500, homePage(`Błąd: ${err.message}`));
+    sendHtml(res, 500, homePage(`Error: ${err.message}`));
   }
 }
 
@@ -429,7 +429,7 @@ function openBrowser(url) {
     await ensureRegistered();
   } catch (err) {
     log(`FATAL: ${err.message}`);
-    log(`Sprawdź połączenie z ${data.serverUrl} i uruchom ponownie.`);
+    log(`Check your connection to ${data.serverUrl} and try again.`);
     process.exit(1);
   }
 
